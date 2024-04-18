@@ -3,17 +3,31 @@ import React from 'react'
 import Button from '../Button'
 
 import styles from './ToastPlayground.module.css'
-import Toast from '../Toast/Toast'
+import ToastShelf from '../ToastShelf/ToastShelf'
 
 const VARIANT_OPTIONS = ['notice', 'warning', 'success', 'error']
 
 function ToastPlayground() {
-  const [isRendered, setIsRendered] = React.useState(false)
+  const [toasts, setToasts] = React.useState([])
   const [message, setMessage] = React.useState('')
   const [variant, setVariant] = React.useState(VARIANT_OPTIONS[0])
 
-  function handleDismiss() {
-    setIsRendered(false)
+  function handleCreateToast(event) {
+    event.preventDefault()
+
+    const nexToasts = [...toasts, { id: crypto.randomUUID(), message, variant }]
+    setToasts(nexToasts)
+
+    setMessage('')
+    setVariant('notice')
+  }
+
+  function handleDismiss(id) {
+    const nextToasts = toasts.filter((toast) => {
+      return toast.id !== id
+    })
+
+    setToasts(nextToasts)
   }
 
   return (
@@ -23,13 +37,9 @@ function ToastPlayground() {
         <h1>Toast Playground</h1>
       </header>
 
-      {isRendered && (
-        <Toast variant={variant} handleDismiss={handleDismiss}>
-          {message}
-        </Toast>
-      )}
+      <ToastShelf toasts={toasts} handleDismiss={handleDismiss} />
 
-      <div className={styles.controlsWrapper}>
+      <form onSubmit={handleCreateToast} className={styles.controlsWrapper}>
         <div className={styles.row}>
           <label
             htmlFor='message'
@@ -68,7 +78,7 @@ function ToastPlayground() {
                       setVariant(event.target.value)
                     }}
                   />
-                  {option}
+                  {option}{' '}
                 </label>
               )
             })}
@@ -78,16 +88,10 @@ function ToastPlayground() {
         <div className={styles.row}>
           <div className={styles.label} />
           <div className={`${styles.inputWrapper} ${styles.radioWrapper}`}>
-            <Button
-              onClick={() => {
-                setIsRendered(true)
-              }}
-            >
-              Pop Toast!
-            </Button>
+            <Button>Pop Toast!</Button>
           </div>
         </div>
-      </div>
+      </form>
     </div>
   )
 }
